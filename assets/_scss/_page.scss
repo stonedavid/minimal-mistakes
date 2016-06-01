@@ -103,7 +103,7 @@
 
 .page__hero {
   position: relative;
-  margin-bottom: 2em;
+  margin-bottom: 0em;
   @include clearfix;
   animation: intro 0.3s both;
   animation-delay: 0.25s;
@@ -116,7 +116,7 @@
     text-align: center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: center bottom;
     animation: intro 0.3s both;
     animation-delay: 0.25s;
 

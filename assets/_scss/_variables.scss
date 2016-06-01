@@ -14,7 +14,7 @@ $indent-var                 : 1.3em;
 
 /* system typefaces */
 $serif                      : Georgia, Times, serif;
-$sans-serif                 : -apple-system, ".SFNSText-Regular", "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", Arial, sans-serif;
+$sans-serif                 : -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", Arial, sans-serif;
 $monospace                  : Monaco, Consolas, "Lucida Console", monospace;
 
 /* sans serif typefaces */
@@ -78,8 +78,8 @@ $instagram-color            : #517fa4;
 $lastfm-color               : #d51007;
 $linkedin-color             : #007bb6;
 $pinterest-color            : #cb2027;
-$rss-color                  : #fa9b39;
-$soundcloud-color           : #ff3300;
+$rss-color                  : $dark-gray;
+$soundcloud-color           : $dark-gray;
 $stackoverflow-color        : #fe7a15;
 $tumblr-color               : #32506d;
 $twitter-color              : #55acee;
