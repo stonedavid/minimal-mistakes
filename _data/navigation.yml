@@ -1,16 +1,8 @@
 # main links links
 main:
-  - title: "Analysis"
-    url: /analysis/
-
-  - title: "Synthesis"
-    url: /synthesis/
 
   - title: "About"
     url: /about/
-
-  - title: "Blog"
-    url: /blog/
 
   - title: "Contact"
     url: /contact/

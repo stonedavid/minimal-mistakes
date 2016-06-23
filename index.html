@@ -1,11 +1,21 @@
 ---
-layout: single
+layout: archive
 header:
     overlay_image: ripple.jpg
-    overlay_filter: 0.2
-    cta_label: "Music Data Analysis+Synthesis"
+    overlay_filter: rgba(171, 150, 180, 0.1)
+    cta_label: "Music Data Analysis + Synthesis"
     cta_url: /contact/
-author_profile: false
-background-color: rgba(171, 178, 166, 0.5);
+author_profile: true
 
 ---
+
+{% include base_path %}
+
+<h3 class="archive__subtitle">{{ site.data.ui-text[site.locale].recent_posts }}</h3>
+
+{% for post in paginator.posts %}
+  {% include archive-single.html %}
+{% endfor %}
+
+{% include paginator.html %}
+

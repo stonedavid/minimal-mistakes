@@ -38,5 +38,8 @@
     "build:css": "npm run scss && npm run autoprefixer",
     "build:js": "npm run uglify",
     "build:all": "npm run build:css && npm run build:js"
+  },
+  "dependencies": {
+    "lodash": "^4.13.1"
   }
 }

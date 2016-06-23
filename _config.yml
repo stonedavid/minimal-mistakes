@@ -10,7 +10,7 @@ locale                   : "en-US"
 title                    : "David Stone"
 title_separator          : "-"
 name                     : "David Stone"
-description              : "An amazing website."
+description              : 
 url                      : # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 gh_repo                  :
@@ -18,9 +18,11 @@ teaser                   : # filename of teaser fallback teaser image placed in 
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
 comments:
-  provider               : # false (default), "disqus", "facebook", "google-plus", custom"
+  provider               : # false (default), "disqus", "discourse", "facebook", "google-plus", custom"
   disqus:
     shortname            : # https://help.disqus.com/customer/portal/articles/466208-what-s-a-shortname-
+  discourse:
+    server               : # https://meta.discourse.org/t/embedding-discourse-comments-via-javascript/31963 , e.g.: meta.discourse.org
   facebook:
     # https://developers.facebook.com/docs/plugins/comments
     appid                :
@@ -62,10 +64,10 @@ google_ad_slot           :
 # Site Author
 author:
   name             : "David Stone"
-  avatar           : "face.jpg"
-  bio              : "Programmer, composer, educator."
+  avatar           : "bio-photo.jpg"
+  bio              : "I am an amazing person."
   location         : "Brooklyn, NY"
-  email            : "dcs309@nyu.edu"
+  email            :
   uri              :
   bitbucket        :
   codepen          :
@@ -73,14 +75,14 @@ author:
   flickr           :
   facebook         :
   foursquare       :
-  github           : "stonedavid"
+  github           :
   google_plus      :
   keybase          :
   instagram        :
   lastfm           :
   linkedin         :
   pinterest        :
-  soundcloud       : "davidstone-1"
+  soundcloud       :
   stackoverflow    : # http://stackoverflow.com/users/123456/username
   steam            :
   tumblr           :
@@ -90,20 +92,12 @@ author:
   xing             :
   youtube          :
 
-defaults:
-  # _pages
-  - scope:
-      path: ""
-      type: pages
-    values:
-      layout: single
-      author_profile: true
-
 
 # Reading Files
 include:
   - .htaccess
   - _pages
+  - assets/js/vendor
 exclude:
   - "*.sublime-project"
   - "*.sublime-workspace"
@@ -113,7 +107,6 @@ exclude:
   - .sass-cache
   - assets/js/plugins
   - assets/js/_main.js
-  - assets/js/vendor
   - Capfile
   - CHANGELOG
   - config

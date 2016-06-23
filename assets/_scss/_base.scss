@@ -60,6 +60,7 @@ u,
 ins {
   text-decoration: none;
   border-bottom: 1px solid $text-color;
+  font-weight: lighter;
   a {
     color: inherit;
   }
@@ -160,11 +161,13 @@ hr {
 ul li,
 ol li {
   margin-bottom: 0.5em;
+  font-weight: lighter;
 }
 
 li ul,
 li ol {
   margin-top: 0.5em;
+  font-weight: lighter;
 }
 
 /*
@@ -230,6 +233,7 @@ figcaption {
   color: mix(#fff, $text-color, 25%);
   font-family: $caption-font-family;
   font-size: $type-size-6;
+
 
   a {
     color: inherit;
