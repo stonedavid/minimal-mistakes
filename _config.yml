@@ -10,7 +10,7 @@ locale                   : "en-US"
 title                    : "David Stone"
 title_separator          : "-"
 name                     : "David Stone"
-description              : 
+description              : "Music Information Retrieval and Audio Data Analysis"
 url                      : # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 gh_repo                  :
