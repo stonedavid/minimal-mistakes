@@ -18,7 +18,7 @@ teaser                   : # filename of teaser fallback teaser image placed in 
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
 comments:
-  provider               : # false (default), "disqus", "discourse", "facebook", "google-plus", custom"
+  provider               : disqus # (default), "disqus", "discourse", "facebook", "google-plus", custom"
   disqus:
     shortname            : # https://help.disqus.com/customer/portal/articles/466208-what-s-a-shortname-
   discourse:
@@ -65,9 +65,9 @@ google_ad_slot           :
 author:
   name             : "David Stone"
   avatar           : "jewelface.jpg"
-  bio              : "I am an amazing person."
+  bio              : "Music Technology, Education, and Production"
   location         : "Brooklyn, NY"
-  email            :
+  email            : "dcs309@nyu.edu"
   uri              :
   bitbucket        :
   codepen          :
@@ -75,14 +75,14 @@ author:
   flickr           :
   facebook         :
   foursquare       :
-  github           :
+  github           : "https://github.com/stonedavid"
   google_plus      :
   keybase          :
   instagram        :
   lastfm           :
   linkedin         :
   pinterest        :
-  soundcloud       :
+  soundcloud       : "http://soundcloud.com/davidstone-1"
   stackoverflow    : # http://stackoverflow.com/users/123456/username
   steam            :
   tumblr           :
