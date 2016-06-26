@@ -245,7 +245,7 @@ function searchAndPlay(songName,albumName) {
     playSong(songName,albumName);
 
     function searchTracks(query) {
-    	console.log(query)
+    	console.log(query);
         $.ajax({
             url: 'https://api.spotify.com/v1/search',
             data: {
