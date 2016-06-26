@@ -6,9 +6,9 @@ comments: true
 
 ---
 
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+<script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
 
 {% include toc title="Contents" icon="file-text" %}
 
