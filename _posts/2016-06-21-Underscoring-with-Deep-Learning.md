@@ -140,7 +140,7 @@ function load_and_render() {
 
 		data = json[Math.floor(Math.random()*json.length)];
 
-		song_title = data.Cue.slice(3,-4).replace('_',' ');
+		song_title = data.Cue.slice(3,-4).replace(/_\d/g,' ');
 
 		console.log(data.Film);
 
@@ -212,7 +212,7 @@ function updateData() {
 
 		data = json[Math.floor(Math.random()*json.length)];
 
-		song_title = data.Cue.slice(3,-4).replace(/_/g,' ');
+		song_title = data.Cue.slice(3,-4).replace(/_\d/g,' ');
 
 		console.log(data.Film);
 
