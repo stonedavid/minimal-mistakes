@@ -95,13 +95,11 @@ We want the network to recognize sound events no matter where they fall in the s
 
 <script type="text/javascript">  
 
-// Setup variables
-
 var url = '../assets/data/pooling_dict.json'
 	, margin = {top: 30, right: 10, bottom: 30, left: 10}
 	, width = parseInt(d3.select('#chart').style('width'), 10)
 	, width = width - margin.left - margin.right
-	, height = 200 // placeholder
+	, height = 200 
 	, barHeight = 20
 	, spacing = 3
 	, percent = d3.format('%')
