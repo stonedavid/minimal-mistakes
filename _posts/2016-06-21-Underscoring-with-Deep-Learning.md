@@ -109,64 +109,58 @@ var url = '../assets/data/pooling_dict.json'
 	, genres = ['Action','Adventure','Comedy','Crime','Drama','Fantasy','Musical','Romance','Thriller','Sci-Fi'];
 
 
-// Scales and axes
 var x = d3.scale.linear()
 	.range([0, width])
-	.domain([0, 1.0]); // placeholder
+	.domain([0, 1.0]); 
 
-var y = d3.scale.ordinal()
+var y = d3.scale.ordinal();
 
 var xAxis = d3.svg.axis()
 	.scale(x)
 	.tickFormat(percent);
 
-// Helper functions
 
-var filmFn = function(d) {return d.Film}
-var predFn = function(d) {return d.Predictions}
-var targFn = function(d) {return d.Targets}
-var cueFn = function(d) {return d.Cue}
-var compFn = function(d) {return d.Composer}
-var yearFn = function(d) {return parseInt(d.year)}
+var filmFn = function(d) {return d.Film};
+var predFn = function(d) {return d.Predictions};
+var targFn = function(d) {return d.Targets};
+var cueFn = function(d) {return d.Cue};
+var compFn = function(d) {return d.Composer};
+var yearFn = function(d) {return parseInt(d.year)};
 
 
-// Create the chart
 var chart = d3.select('#chart').append('svg')
 	.style('width', (width + margin.left + margin.right) + 'px')
 	.append('g')
 	.attr('transform', 'translate(' + [margin.left, margin.top] + ')');
 
-// Load data and execute
 function load_and_render() {
 	d3.json(url, function(error,d) {
-		return d; // only first entry
+		return d;
 	}).get(function(err,json) {
 
-		data = json[Math.floor(Math.random()*json.length)]
+		data = json[Math.floor(Math.random()*json.length)];
 
 		song_title = data.Cue.slice(3,-4).replace('_',' ');
 
-		console.log(data.Film)
+		console.log(data.Film);
 
-		searchAndPlay(song_title,data.Film.slice(0,10))
+		searchAndPlay(song_title,data.Film.slice(0,10));
 
-		// set y domain
 		y.domain(d3.range(data['Predictions'].length))
 			.rangeBands([0, data['Predictions'].length * barHeight]);
 
-		x.domain([d3.min(data.Predictions)*0.9, d3.max(data.Predictions)])
+		x.domain([d3.min(data.Predictions)*0.9, d3.max(data.Predictions)]);
 
-		// set height
+
 		height = y.rangeExtent()[1];
 		d3.select(chart.node().parentNode)
-			.style('height', (height + margin.top + margin.bottom) + 'px')
+			.style('height', (height + margin.top + margin.bottom) + 'px');
 
 		document.getElementById("d3_title").innerHTML = '"'+song_title+'", from '+data.Film;
 
-		// add bars
 
 		var bars = chart.selectAll('.bar')
-			.data(data['Predictions'])
+			.data(data['Predictions']);
 
 		bars.exit().remove();
 
@@ -178,33 +172,30 @@ function load_and_render() {
 		bars.append('rect')
 			.attr('class','background')
 			.attr('height', y.rangeBand())
-			.attr('width',width)
+			.attr('width',width);
 
 		bars.append('rect')
 			.attr('class', 'percent')
 			.attr('height', y.rangeBand())
 			.attr('width', function(d) {return x(d); })
-			.style('fill', function(d,i) {return (data.Targets[i]) ? '#b8e0b8' : '#b8cce0'})
+			.style('fill', function(d,i) {return (data.Targets[i]) ? '#b8e0b8' : '#b8cce0'});
 
 		bars.append('text')
         	.text(function(d,i) { return genres[i]; })
         	.attr('class', 'name')
         	.attr('y', y.rangeBand() - 5)
         	.attr('x', spacing);
-	})
-}
+	});
+};
 
-// run
 
-load_and_render()
-
-// Listener
+load_and_render();
 
 var auto_step = setInterval(next, 15000);
 
 function next() {
 	updateData()
-}
+};
 
 document.getElementById("skip_btn").addEventListener("click", function() {
 	updateData();
@@ -214,29 +205,27 @@ document.getElementById("skip_btn").addEventListener("click", function() {
 
 function updateData() {
 	d3.json(url, function(error,d) {
-		return d; // only first entry
+		return d; 
 	}).get(function(err,json) {
 
-		audio.pause()
+		audio.pause();
 
-		data = json[Math.floor(Math.random()*json.length)]
+		data = json[Math.floor(Math.random()*json.length)];
 
 		song_title = data.Cue.slice(3,-4).replace(/_/g,' ');
 
-		console.log(data.Film)
+		console.log(data.Film);
 
-		searchAndPlay(song_title,data.Film.slice(0,10))
+		searchAndPlay(song_title,data.Film.slice(0,10));
 
-		// set y domain
 		y.domain(d3.range(data['Predictions'].length))
 			.rangeBands([0, data['Predictions'].length * barHeight]);
 
-		x.domain([d3.min(data.Predictions)*0.9, d3.max(data.Predictions)])
+		x.domain([d3.min(data.Predictions)*0.9, d3.max(data.Predictions)]);
 
-		// set height
 		height = y.rangeExtent()[1];
 		d3.select(chart.node().parentNode)
-			.style('height', (height + margin.top + margin.bottom) + 'px')
+			.style('height', (height + margin.top + margin.bottom) + 'px');
 
 		document.getElementById("d3_title").innerHTML = '"'+data.Cue.slice(3,-4)+'", from '+data.Film;
 
@@ -248,12 +237,12 @@ function updateData() {
 			.attr('width', function(d,i) {return x(d); })
 			.style('fill', function(d,i) {return (data.Targets[i]) ? '#b8e0b8' : '#b8cce0'})
 	});
-}
+};
 
 function searchAndPlay(songName,albumName) {
     audio = new Audio();
 
-    playSong(songName,albumName)
+    playSong(songName,albumName);
 
     function searchTracks(query) {
     	console.log(query)
@@ -284,8 +273,8 @@ function searchAndPlay(songName,albumName) {
         var query = '"'+songName+'"';
         if (albumName) {
             query += ' album:' + albumName;
-        }
+        };
 
         searchTracks(query);
-    }
-}
+    };
+};
