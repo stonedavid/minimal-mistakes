@@ -262,7 +262,7 @@ function searchAndPlay(songName,albumName) {
 
                 }
                 else {
-                	document.getElementById("skip_btn").innerHTML = 'Not Found: Click to Skip';
+                	next();
                 	audio.pause();
                 }
             }
