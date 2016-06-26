@@ -19,24 +19,24 @@ h1, h2, h3, h4, h5, h6 {
   margin: 2em 0 0.5em;
   line-height: 1.2;
   font-family: $header-font-family;
-  font-weight: lighter;
+  //font-weight: lighter;
 }
 
 h1 {
   margin-top: 0;
-  font-size: $type-size-3;
+  font-size: $type-size-2;
 }
 
 h2 {
-  font-size: $type-size-4;
+  font-size: $type-size-3;
 }
 
 h3 {
-  font-size: $type-size-5;
+  font-size: $type-size-4;
 }
 
 h4 {
-  font-size: $type-size-6;
+  font-size: $type-size-5;
 }
 
 h5 {
@@ -248,6 +248,56 @@ figcaption {
   }
 }
 
+/*
+d3.js stuff
+=============================== */
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%; /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+}
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
+}
+
+.bar rect {
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
+
+.bar rect.background {
+    fill: #eee;
+}
+
+.bar rect.percent {
+    fill: #74c476;
+}
+
+.bar:hover rect.percent {
+    fill: #a1d99b;
+}
+
+.bar text {
+    font-size: 12px;
+    fill: #333;
+}
+
+.axis line {
+    stroke: #ccc;
+    stroke-width: 1;
+}
+
+line.median {
+    stroke: #777;
+    stroke-width: 1;
+}
 
 /* Fix IE9 SVG bug */
 

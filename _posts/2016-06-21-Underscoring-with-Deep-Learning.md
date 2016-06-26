@@ -6,6 +6,10 @@ comments: true
 
 ---
 
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+
 {% include toc title="Contents" icon="file-text" %}
 
 ## Part 1: Searching for Scores ##  
@@ -56,17 +60,24 @@ I admit it's a little hand-wavy to just jump from a lot of talk about commercial
 * Film music is a well-defined category, easy to access, and most importantly, extremely plentiful
 * Film genres are also well defined, and IMDB and Wikipedia allow for building a large dataset with consistent labels
 
-Conceivably, although it would be much trickier to build and label, you could amass a dataset of music from commercials and then label them on product categories and film style.{: .notice--primary} 
+Although it would be much trickier to build and label, you could conceivably amass a dataset of music from commercials and then label them by product categories and film style.
 
 ***
 
-## Part 3: Deep Learning and Convolutional Nets ##
+
+## Part 3: Gathering Training Data ##
+
+Neural networks need a lot of well-labeled data, and the more complex the network, the more data you need. Building the dataset for this experiment was by far the most time-intensive and laborious task. The audio came from any and all soundtracks at my university library. Each album was hand-labeled with genre tags drawn from the Internet Movie Database, which annotates every entry with at least one of twenty-two genre tags. 
+
+All tracks from the same film share the same genre tag, partly for consistency and simplicity, and partly based on the hypothesis that there would be more sonic similarities between contrasting cues within genres than similar cues in different genres. That is, an action scene cue from *Star Wars* should have more in common with a comedy cue from *The Empire Strikes Back* than an action cue from the *Bourne Identity*, for example.
+
+## Part 4: Deep Learning and Convolutional Nets ##
 <br/>
-By now, everyone and their grandmother have seen what convolutional deep nets can do with image datasets. But what about other media? Can CNNs be effective classifiers for audio?
+If you do a quick search for deep learning or convolutional neural networks (CNN), you can find a lot of fantastic examples of how effective they are at tagging images. But what about other media? Can CNNs be effective classifiers for audio?
 
 In fact, CNNs have set benchmarks in a wide array of audio classification tasks, notably phoneme tagging and speech transcription, by essentially treating tiled spectrograms as images. The same convolution trick that gives CNNs the ability to recognize rotated, flipped, and scaled images is useful for audio, too. 
 
-We want the network to recognize sound events independent of where exactly they fall in the spectrogram, especially along the time-axis. Plus, a CNN builds up a hierarchy of complex that shapes could represent higher-level musical events. A fully-connected deep network, on the other hand, can't really be trained on two-dimensional data, since the input matrix is 'unwrapped' into a long vector, destroying the relationships between adjacent pixels.
+We want the network to recognize sound events no matter where they fall in the spectrogram, especially along the time-axis. Plus, a CNN builds up a hierarchy of complex that shapes can represent higher-level musical events. A fully-connected deep network, on the other hand, can't really be trained on two-dimensional data, since the input matrix is 'unwrapped' into a long vector, destroying the relationships between adjacent pixels.
 
 <figure class='half'>
 	<img src='../images/sloth.jpg'>
@@ -74,6 +85,207 @@ We want the network to recognize sound events independent of where exactly they 
 	<figcaption>Two-dimensional inputs: (l) a photo of a sloth in a bucket, (r) concatenated STFTs</figcaption>
 </figure>
 
+<h2>Genre Predictions</h2>
+<p>Here is a visualization of the film genres predicted on the held-out dataset of 300 tracks</p>
+<div id='chart' class='align-center'></div>
+<h3 id='d3_title' style='margin-left: 15px; margin-top: 0px'></h3>
+<h4 id='skip_btn' style='margin-left: 15px;cursor: pointer;'>Skip</h4>
+    
 
 
+<script type="text/javascript">  
 
+// Setup variables
+
+var url = '../assets/data/pooling_dict.json'
+	, margin = {top: 30, right: 10, bottom: 30, left: 10}
+	, width = parseInt(d3.select('#chart').style('width'), 10)
+	, width = width - margin.left - margin.right
+	, height = 200 // placeholder
+	, barHeight = 20
+	, spacing = 3
+	, percent = d3.format('%')
+	, i = 0
+	, genres = ['Action','Adventure','Comedy','Crime','Drama','Fantasy','Musical','Romance','Thriller','Sci-Fi'];
+
+
+// Scales and axes
+var x = d3.scale.linear()
+	.range([0, width])
+	.domain([0, 1.0]); // placeholder
+
+var y = d3.scale.ordinal()
+
+var xAxis = d3.svg.axis()
+	.scale(x)
+	.tickFormat(percent);
+
+// Helper functions
+
+var filmFn = function(d) {return d.Film}
+var predFn = function(d) {return d.Predictions}
+var targFn = function(d) {return d.Targets}
+var cueFn = function(d) {return d.Cue}
+var compFn = function(d) {return d.Composer}
+var yearFn = function(d) {return parseInt(d.year)}
+
+
+// Create the chart
+var chart = d3.select('#chart').append('svg')
+	.style('width', (width + margin.left + margin.right) + 'px')
+	.append('g')
+	.attr('transform', 'translate(' + [margin.left, margin.top] + ')');
+
+// Load data and execute
+function load_and_render() {
+	d3.json(url, function(error,d) {
+		return d; // only first entry
+	}).get(function(err,json) {
+
+		data = json[Math.floor(Math.random()*json.length)]
+
+		song_title = data.Cue.slice(3,-4).replace('_',' ');
+
+		console.log(data.Film)
+
+		searchAndPlay(song_title,data.Film.slice(0,10))
+
+		// set y domain
+		y.domain(d3.range(data['Predictions'].length))
+			.rangeBands([0, data['Predictions'].length * barHeight]);
+
+		x.domain([d3.min(data.Predictions)*0.9, d3.max(data.Predictions)])
+
+		// set height
+		height = y.rangeExtent()[1];
+		d3.select(chart.node().parentNode)
+			.style('height', (height + margin.top + margin.bottom) + 'px')
+
+		document.getElementById("d3_title").innerHTML = '"'+song_title+'", from '+data.Film;
+
+		// add bars
+
+		var bars = chart.selectAll('.bar')
+			.data(data['Predictions'])
+
+		bars.exit().remove();
+
+		bars.enter().append('g')
+			.attr('class','bar')
+			.attr('transform', function(d,i) {return 'translate(0,' + y(i) + ')'; });
+
+
+		bars.append('rect')
+			.attr('class','background')
+			.attr('height', y.rangeBand())
+			.attr('width',width)
+
+		bars.append('rect')
+			.attr('class', 'percent')
+			.attr('height', y.rangeBand())
+			.attr('width', function(d) {return x(d); })
+			.style('fill', function(d,i) {return (data.Targets[i]) ? '#b8e0b8' : '#b8cce0'})
+
+		bars.append('text')
+        	.text(function(d,i) { return genres[i]; })
+        	.attr('class', 'name')
+        	.attr('y', y.rangeBand() - 5)
+        	.attr('x', spacing);
+	})
+}
+
+// run
+
+load_and_render()
+
+// Listener
+
+var auto_step = setInterval(next, 15000);
+
+function next() {
+	updateData()
+}
+
+document.getElementById("skip_btn").addEventListener("click", function() {
+	updateData();
+	clearInterval(auto_step);
+	auto_step = setInterval(next, 15000);
+});
+
+function updateData() {
+	d3.json(url, function(error,d) {
+		return d; // only first entry
+	}).get(function(err,json) {
+
+		audio.pause()
+
+		data = json[Math.floor(Math.random()*json.length)]
+
+		song_title = data.Cue.slice(3,-4).replace(/_/g,' ');
+
+		console.log(data.Film)
+
+		searchAndPlay(song_title,data.Film.slice(0,10))
+
+		// set y domain
+		y.domain(d3.range(data['Predictions'].length))
+			.rangeBands([0, data['Predictions'].length * barHeight]);
+
+		x.domain([d3.min(data.Predictions)*0.9, d3.max(data.Predictions)])
+
+		// set height
+		height = y.rangeExtent()[1];
+		d3.select(chart.node().parentNode)
+			.style('height', (height + margin.top + margin.bottom) + 'px')
+
+		document.getElementById("d3_title").innerHTML = '"'+data.Cue.slice(3,-4)+'", from '+data.Film;
+
+		var bars = d3.selectAll('.bar')
+			.data(data['Predictions']).transition();
+
+		bars.select('.percent')
+			.duration(function(d,i) {return i*300})
+			.attr('width', function(d,i) {return x(d); })
+			.style('fill', function(d,i) {return (data.Targets[i]) ? '#b8e0b8' : '#b8cce0'})
+	});
+}
+
+function searchAndPlay(songName,albumName) {
+    audio = new Audio();
+
+    playSong(songName,albumName)
+
+    function searchTracks(query) {
+    	console.log(query)
+        $.ajax({
+            url: 'https://api.spotify.com/v1/search',
+            data: {
+                q: query,
+                type: 'track'
+            },
+            success: function (response) {
+                if (response.tracks.items.length) {
+                    var track = response.tracks.items[0];
+                    audio.src = track.preview_url;
+                    audio.play();
+                    document.getElementById("skip_btn").innerHTML = 'Playing...Click to Skip'
+                    console.log(track.name,track.album,track.artist)
+
+                }
+                else {
+                	document.getElementById("skip_btn").innerHTML = 'Not Found: Click to Skip'
+                	audio.pause()
+                }
+            }
+        });
+    }
+
+    function playSong(songName, albumName) {
+        var query = '"'+songName+'"';
+        if (albumName) {
+            query += ' album:' + albumName;
+        }
+
+        searchTracks(query);
+    }
+}
