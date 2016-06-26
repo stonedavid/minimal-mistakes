@@ -257,17 +257,17 @@ function searchAndPlay(songName,albumName) {
                     var track = response.tracks.items[0];
                     audio.src = track.preview_url;
                     audio.play();
-                    document.getElementById("skip_btn").innerHTML = 'Playing...Click to Skip'
-                    console.log(track.name,track.album,track.artist)
+                    document.getElementById("skip_btn").innerHTML = 'Playing...Click to Skip';
+                    console.log(track.name,track.album,track.artist);
 
                 }
                 else {
-                	document.getElementById("skip_btn").innerHTML = 'Not Found: Click to Skip'
-                	audio.pause()
-                }
-            }
+                	document.getElementById("skip_btn").innerHTML = 'Not Found: Click to Skip';
+                	audio.pause();
+                };
+            };
         });
-    }
+    };
 
     function playSong(songName, albumName) {
         var query = '"'+songName+'"';
