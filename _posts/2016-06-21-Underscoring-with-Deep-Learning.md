@@ -273,7 +273,7 @@ var yearFn = function(d) {return parseInt(d.year)};
 var chart = d3.select('#chart').append('svg')
 	.style('width', (width + margin.left + margin.right) + 'px')
 	.append('g')
-	.attr('transform', 'translate(' + [margin.left, margin.top] + ')')
+	.attr('transform', 'translate(' + [margin.left, margin.top] + ')');
 
 
 
@@ -401,7 +401,7 @@ function resize() {
     chart.selectAll('rect.percent')
         .attr('width', function(d) { return x(d); });
 
-}
+};
 
 function searchAndPlay(songName,albumName) {
 
@@ -431,7 +431,7 @@ function searchAndPlay(songName,albumName) {
                 }
             }
         });
-    }
+    };
 
     function playSong(songName, albumName) {
         var query = '"'+songName+'"';
