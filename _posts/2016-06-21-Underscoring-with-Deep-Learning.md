@@ -186,7 +186,7 @@ function renderVenn() {
 		div.selectAll("path")
     		.style("stroke-opacity", 0)
     		.style("stroke", "#fff")
-    		.style("stroke-width", 0)
+    		.style("stroke-width", 0);
 
 		div.selectAll("g")
 		    .on("mouseover", function(d, i) {
@@ -196,7 +196,6 @@ function renderVenn() {
 
 		        tooltip.text(d.size+' films in '+d.sets.join(' + '));
 
-		        console.log('Size',d.size)
 
 		        var selection = d3.select(this).transition("tooltip").duration(400);
 		        selection.select("path")
