@@ -384,11 +384,10 @@ function updateData() {
 d3.select(window).on('resize', resize); 
 
 function resize() {
-    // update width
     width = parseInt(d3.select('#chart').style('width'), 10);
     width = width - margin.left - margin.right;
 
-    // resize the chart
+
     x.range([0, width]);
     d3.select(chart.node().parentNode)
         .style('height', (y.rangeExtent()[1] + margin.top + margin.bottom) + 'px')
