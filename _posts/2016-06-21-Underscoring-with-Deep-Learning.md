@@ -333,7 +333,6 @@ function load_and_render() {
 load_and_render();
 
 var auto_step = setInterval(next, 15000);
-//var fade_out = $('audio').animate({volume: 0.0}, 1000);
 
 function next() {
 	$('audio').animate({volume: 0.0}, 1000);
