@@ -151,8 +151,6 @@ the differing sizes of the tag sets</p>
 
 <script>
 
-// define sets and set set intersections
-
 document.getElementById('dd1').value = 'Action';
 document.getElementById('dd2').value = 'Comedy';
 document.getElementById('dd3').value = 'Drama';
@@ -178,7 +176,6 @@ function renderVenn() {
 					sets.push(e);
 				};
 			});
-			//d3.select("#venn").datum(sets).call(venn_chart);
 			d3.select("#venn").datum(sets).call(venn_chart);
 		}
 
@@ -191,22 +188,16 @@ function renderVenn() {
     		.style("stroke", "#fff")
     		.style("stroke-width", 0)
 
-		
-
-		// add listeners to all the groups to display tooltip on mouseover
 		div.selectAll("g")
 		    .on("mouseover", function(d, i) {
-		        // sort all the areas relative to the current item
 		        venn.sortAreas(div, d);
 
-		        // Display a tooltip with the current size
 		        tooltip.transition().duration(400).style("opacity", .9);
 
 		        tooltip.text(d.size+' films in '+d.sets.join(' + '));
 
 		        console.log('Size',d.size)
 
-		        // highlight the current path
 		        var selection = d3.select(this).transition("tooltip").duration(400);
 		        selection.select("path")
 		            .style("stroke-width", '5px')
