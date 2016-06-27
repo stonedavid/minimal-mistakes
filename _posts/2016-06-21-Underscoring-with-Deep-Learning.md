@@ -5,12 +5,26 @@ comments: true
 ---
 
 ---
+<style>
+	div.venntooltip {   
+	  position: absolute;           
+	  text-align: center;                          
+	  padding: 2px;             
+	  font: 12px sans-serif;        
+	  background: #EEE;   
+	  border: 0px;      
+	  border-radius: 8px;           
+	  pointer-events: none;         
+}
+</style>
 
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+<script src="../assets/js/vendor/venn/venn.js"></script>
 
 {% include toc title="Contents" icon="file-text" %}
+
 
 ## Part 1: Searching for Scores ##  
 <br/>
@@ -85,10 +99,146 @@ We want the network to recognize sound events no matter where they fall in the s
 	<figcaption>Two-dimensional inputs: (l) a photo of a sloth in a bucket, (r) concatenated STFTs</figcaption>
 </figure>
 
+<h2>Tag Overlaps</h2>
+<p>Some genre tags are frequently paired. This interactive plot shows how much overlap there is between the tags, as well as
+the differing sizes of the tag sets</p>
+
+<figure class='half'>
+<select id='dd1' onchange='renderVenn()'>
+  <option value="N"></option>
+  <option value="Action">Action</option>
+  <option value="Adventure">Adventure</option>
+  <option value="Comedy">Comedy</option>
+  <option value="Crime">Crime</option>
+  <option value="Drama">Drama</option>
+  <option value="Fantasy">Fantasy</option>
+  <option value="Musical">Musical</option>
+  <option value="Romance">Romance</option>
+  <option value="Sci-Fi">Sci-Fi</option>
+  <option value="Thriller">Thriller</option>
+</select>
+
+<select id='dd2' onchange='renderVenn()'>
+  <option value="N"></option>
+  <option value="Action">Action</option>
+  <option value="Adventure">Adventure</option>
+  <option value="Comedy">Comedy</option>
+  <option value="Crime">Crime</option>
+  <option value="Drama">Drama</option>
+  <option value="Fantasy">Fantasy</option>
+  <option value="Musical">Musical</option>
+  <option value="Romance">Romance</option>
+  <option value="Sci-Fi">Sci-Fi</option>
+  <option value="Thriller">Thriller</option>
+</select>
+
+<select id='dd3' onchange='renderVenn()'>
+  <option value="N"></option>
+  <option value="Action">Action</option>
+  <option value="Adventure">Adventure</option>
+  <option value="Comedy">Comedy</option>
+  <option value="Crime">Crime</option>
+  <option value="Drama">Drama</option>
+  <option value="Fantasy">Fantasy</option>
+  <option value="Musical">Musical</option>
+  <option value="Romance">Romance</option>
+  <option value="Sci-Fi">Sci-Fi</option>
+  <option value="Thriller">Thriller</option>
+</select>
+</figure>
+
+<div id='venn'></div>
+
+<script>
+
+// define sets and set set intersections
+
+document.getElementById('dd1').value = 'Action';
+document.getElementById('dd2').value = 'Comedy';
+document.getElementById('dd3').value = 'Drama';
+
+var tooltip = d3.select("body").append("div")
+		    .attr("class", "venntooltip")
+		    .style('opacity',0);
+
+var venn_chart = venn.VennDiagram();
+renderVenn();
+
+
+
+function renderVenn() {
+	d3.json('../assets/data/tag_sets.json', function(error,master_set) {
+
+		function updateSets() {
+			sets = [];
+			fields = [document.getElementById('dd1').value,document.getElementById('dd2').value,document.getElementById('dd3').value]
+			
+			master_set.forEach(function(e,i) {
+				if(e.sets.every(function(val) { return fields.indexOf(val) >= 0; })) {
+					sets.push(e);
+				};
+			});
+			//d3.select("#venn").datum(sets).call(venn_chart);
+			d3.select("#venn").datum(sets).call(venn_chart);
+		}
+
+		updateSets();
+
+		var div = d3.select("#venn");
+
+		div.selectAll("path")
+    		.style("stroke-opacity", 0)
+    		.style("stroke", "#fff")
+    		.style("stroke-width", 0)
+
+		
+
+		// add listeners to all the groups to display tooltip on mouseover
+		div.selectAll("g")
+		    .on("mouseover", function(d, i) {
+		        // sort all the areas relative to the current item
+		        venn.sortAreas(div, d);
+
+		        // Display a tooltip with the current size
+		        tooltip.transition().duration(400).style("opacity", .9);
+
+		        tooltip.text(d.size+' films in '+d.sets.join(' + '));
+
+		        console.log('Size',d.size)
+
+		        // highlight the current path
+		        var selection = d3.select(this).transition("tooltip").duration(400);
+		        selection.select("path")
+		            .style("stroke-width", '5px')
+		            .style("stroke-color", 'white')
+		            .style("fill-opacity", d.sets.length == 1 ? .4 : .1)
+		            .style("stroke-opacity", 1);
+		    })
+
+		    .on("mousemove", function() {
+		        tooltip.style("left", (d3.event.pageX) + "px")
+		               .style("top", (d3.event.pageY - 28) + "px");
+		    })
+
+		    .on("mouseout", function(d, i) {
+		        tooltip.transition().duration(400).style("opacity", 0);
+		        var selection = d3.select(this).transition("tooltip").duration(400);
+		        selection.select("path")
+		            .style("stroke-width", '0px')
+		            .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
+		            .style("stroke-opacity", 0);
+		    });
+	});
+
+};
+
+</script>
+
 <h2>Genre Predictions</h2>
 <p>Here is a visualization of the film genres predicted on the held-out dataset of 300 tracks</p>
 <div id='chart' class='align-center'></div>
-<h3 id='d3_title' style='margin-left: 15px; margin-top: 0px'></h3>
+<audio id='audio'></audio>
+<h3 id='d3_title' style='margin-left: 15px;margin-right: 15px; margin-top: 0px'></h3>
 <h4 id='skip_btn' style='margin-left: 15px;cursor: pointer;'>Skip</h4>
     
 
@@ -96,6 +246,8 @@ We want the network to recognize sound events no matter where they fall in the s
 <script type="text/javascript">  
 
 console.log('script running');
+
+var audio = document.getElementById('audio');
 
 var url = '../assets/data/pooling_dict.json'
 	, margin = {top: 30, right: 10, bottom: 30, left: 10}
@@ -106,7 +258,7 @@ var url = '../assets/data/pooling_dict.json'
 	, spacing = 3
 	, percent = d3.format('%')
 	, i = 0
-	, genres = ['Action','Adventure','Comedy','Crime','Drama','Fantasy','Musical','Romance','Thriller','Sci-Fi'];
+	, genres = ['Action','Adventure','Comedy','Crime','Drama','Fantasy','Musical','Romance','Sci-Fi','Thriller'];
 
 
 var x = d3.scale.linear()
@@ -131,7 +283,9 @@ var yearFn = function(d) {return parseInt(d.year)};
 var chart = d3.select('#chart').append('svg')
 	.style('width', (width + margin.left + margin.right) + 'px')
 	.append('g')
-	.attr('transform', 'translate(' + [margin.left, margin.top] + ')');
+	.attr('transform', 'translate(' + [margin.left, margin.top] + ')')
+
+
 
 function load_and_render() {
 	d3.json(url, function(error,d) {
@@ -160,11 +314,8 @@ function load_and_render() {
 
 
 		var bars = chart.selectAll('.bar')
-			.data(data['Predictions']);
-
-		bars.exit().remove();
-
-		bars.enter().append('g')
+			.data(data['Predictions'])
+			.enter().append('g')
 			.attr('class','bar')
 			.attr('transform', function(d,i) {return 'translate(0,' + y(i) + ')'; });
 
@@ -192,23 +343,25 @@ function load_and_render() {
 load_and_render();
 
 var auto_step = setInterval(next, 15000);
+//var fade_out = $('audio').animate({volume: 0.0}, 1000);
 
 function next() {
-	updateData()
+	$('audio').animate({volume: 0.0}, 1000);
+	setTimeout(updateData,1000);
 };
 
 document.getElementById("skip_btn").addEventListener("click", function() {
-	updateData();
+	$('audio').animate({volume: 0.0}, 1000);
+	setTimeout(updateData,1000);
 	clearInterval(auto_step);
 	auto_step = setInterval(next, 15000);
 });
 
 function updateData() {
+
 	d3.json(url, function(error,d) {
 		return d; 
 	}).get(function(err,json) {
-
-		audio.pause();
 
 		data = json[Math.floor(Math.random()*json.length)];
 
@@ -239,8 +392,28 @@ function updateData() {
 	});
 };
 
+d3.select(window).on('resize', resize); 
+
+function resize() {
+    // update width
+    width = parseInt(d3.select('#chart').style('width'), 10);
+    width = width - margin.left - margin.right;
+
+    // resize the chart
+    x.range([0, width]);
+    d3.select(chart.node().parentNode)
+        .style('height', (y.rangeExtent()[1] + margin.top + margin.bottom) + 'px')
+        .style('width', (width + margin.left + margin.right) + 'px');
+
+    chart.selectAll('rect.background')
+        .attr('width', width);
+
+    chart.selectAll('rect.percent')
+        .attr('width', function(d) { return x(d); });
+
+}
+
 function searchAndPlay(songName,albumName) {
-    audio = new Audio();
 
     playSong(songName,albumName);
 
@@ -256,14 +429,15 @@ function searchAndPlay(songName,albumName) {
                 if (response.tracks.items.length) {
                     var track = response.tracks.items[0];
                     audio.src = track.preview_url;
+                    audio.volume = 0;
                     audio.play();
+                    $('audio').animate({volume: 1.0}, 2000);
                     document.getElementById("skip_btn").innerHTML = 'Playing...Click to Skip';
                     console.log(track.name,track.album,track.artist);
 
                 }
                 else {
-                	next();
-                	audio.pause();
+                	updateData();
                 }
             }
         });
@@ -272,7 +446,7 @@ function searchAndPlay(songName,albumName) {
     function playSong(songName, albumName) {
         var query = '"'+songName+'"';
         if (albumName) {
-            query += ' album:' + albumName;
+            query += ' album:' + '"'+albumName+'"';
         };
 
         searchTracks(query);
