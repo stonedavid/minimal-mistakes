@@ -169,7 +169,7 @@ function renderVenn() {
 
 		function updateSets() {
 			sets = [];
-			fields = [document.getElementById('dd1').value,document.getElementById('dd2').value,document.getElementById('dd3').value]
+			fields = [document.getElementById('dd1').value,document.getElementById('dd2').value,document.getElementById('dd3').value];
 			
 			master_set.forEach(function(e,i) {
 				if(e.sets.every(function(val) { return fields.indexOf(val) >= 0; })) {
