@@ -79,30 +79,18 @@ Although it would be much trickier to build and label, you could conceivably ama
 ***
 
 
-## Part 3: Gathering Training Data ##
+## Part 3: Gathering Ground-Truth Data ##
 
-Neural networks need a lot of well-labeled data, and the more complex the network, the more data you need. Building the dataset for this experiment was by far the most time-intensive and laborious task. The audio came from any and all soundtracks at my university library. Each album was hand-labeled with genre tags drawn from the Internet Movie Database, which annotates every entry with at least one of twenty-two genre tags. 
+Neural networks need a lot of well-labeled data, and the more complex the network, the more data you need. The audio came from any and all soundtracks at the university library. Each album was labeled with genre tags sourced from the Internet Movie Database, which annotates every entry with at least one of twenty-two genre tags. 
 
-All tracks from the same film share the same genre tag, partly for consistency and simplicity, and partly based on the hypothesis that there would be more sonic similarities between contrasting cues within genres than similar cues in different genres. That is, an action scene cue from *Star Wars* should have more in common with a comedy cue from *The Empire Strikes Back* than an action cue from the *Bourne Identity*, for example.
+In the final set, tracks from the same film share the same genre tag, partly for consistency and simplicity, and partly based on the hypothesis that there would be more sonic similarities within a single soundtrack than between soundtracks. This decision, together with some idiosyncratic labels from IMDB, introduced a certain amount of noise to the dataset which ultimately affected accuracy. More on that in the last section.
 
-## Part 4: Deep Learning and Convolutional Nets ##
-<br/>
-If you do a quick search for deep learning or convolutional neural networks (CNN), you can find a lot of fantastic examples of how effective they are at tagging images. But what about other media? Can CNNs be effective classifiers for audio?
+When all was said and done, I had annotated the soundtracks from 788 films and compiled a list for each genre tag that included every track that carried that tag. As I looked over each set, some were clearly far too small to be included in the training data. At the time, my plan was to train a multi-class classifier using a single, massive deep network. Such a network needs training examples that are more or less balanced by class. If I had 100 examples of **A** and 5,000 examples of **B**, the network could converge on a totally overfit solution that does right +95% of the time by mindlessly predicting **B**. That would be useless, so sets with less than 500 tracks were set aside.
 
-In fact, CNNs have set benchmarks in a wide array of audio classification tasks, notably phoneme tagging and speech transcription, by essentially treating tiled spectrograms as images. The same convolution trick that gives CNNs the ability to recognize rotated, flipped, and scaled images is useful for audio, too. 
+Anothing sticking point was the high degree of co-occurence between certain tags. "Drama" tended to span a lot of seemingly unrelated films, sometimes occuring as a single tag and sometimes as a modifier for other tags like "Comedy" or "Romance". The interactive plot below shows the overlaps between the final ten tags. Note the size of the "Drama" set and the huge overlap between "Drama", "Comedy" and "Romance".
 
-We want the network to recognize sound events no matter where they fall in the spectrogram, especially along the time-axis. Plus, a CNN builds up a hierarchy of complex that shapes can represent higher-level musical events. A fully-connected deep network, on the other hand, can't really be trained on two-dimensional data, since the input matrix is 'unwrapped' into a long vector, destroying the relationships between adjacent pixels.
-
-<figure class='half'>
-	<img src='../images/sloth.jpg'>
-	<img src='../images/spect.png'>
-	<figcaption>Two-dimensional inputs: (l) a photo of a sloth in a bucket, (r) concatenated STFTs</figcaption>
-</figure>
-
-<h2>Tag Overlaps</h2>
-<p>Some genre tags are frequently paired. This interactive plot shows how much overlap there is between the tags, as well as
-the differing sizes of the tag sets</p>
-
+<h3>Tag Overlaps</h3>
+ 
 <figure class='half'>
 <select id='dd1' onchange='renderVenn()'>
   <option value="N"></option>
@@ -149,9 +137,40 @@ the differing sizes of the tag sets</p>
 
 <figure id='venn'></figure>
 
+This was probably a clue that the "Drama" tag carried almost no information, but I couldn't set it aside without losing a ton of soundtracks that were only tagged as Dramas, so I went ahead and included them anyway.
+
+## Part 4: Compression and Audio Features ##
+
+Neural networks have the ability to learn on raw spectrogram or PCM data, but audio can be a huge memory hog, and my laptop frankly couldn't handle manipulating 100 GB arrays of 32-bit spectrograms without spewing smoke. To reap the benefits of such a massive dataset, I had to compress it enough to be handled by a GPU. I turned to a now ancient tool, Mel-Frequency Cepstral Coefficients (MFCCs), a workhorse audio feature with roots in music perception research from the 1930s. "Cepstral" coefficients are what you get when you take a secondary transform of the Fourier transform of your audio. Apparently this transformation also effects the terminology, so "spectral" becomes "cepstral", "frequency" becomes "quefrency", and so on. This does two neat things:
+
+* The spectrum can be expressed as the sum of a lot of simple waves
+* Most of those coefficents can be thrown out, because they encode high-frequency periodicities in the spectrum, AKA: noise
+
+You can take a 1024-bin vector of spectral coefficients and mash it down into 40 cepstral coefficients without losing important data. The cepstral coefficients can reconstruct a passably good approximation of the original spectrum. Almost incidentally, cepstral coefficients also approximate co-variance reduction methods like PCA, so the retained coefficients are meaningful and shorn of redundancy.
+
+Such a huge reduction does come at a cost, of course: all pitch and phase information is destroyed in the process. You can listen to what an audio track sounds like after it's been put through the MFCC wringer here.
+
+<audio id='MFCC' src='../assets/data/Raiders_Fade.m4a' controls></audio>
+
+## Part 4: Deep Learning and Convolutional Nets ##
+<br/>
+If you do a quick search for deep learning or convolutional neural networks (CNN), you can find a lot of fantastic examples of how effective they are at tagging images. But what about other media? Can CNNs be effective classifiers for audio?
+
+In fact, CNNs have set benchmarks in a wide array of audio classification tasks, notably phoneme tagging and speech transcription, by essentially treating tiled spectrograms as images. The same convolution trick that gives CNNs the ability to recognize rotated, flipped, and scaled images is useful for audio, too. 
+
+We want the network to recognize sound events no matter where they fall in the spectrogram, especially along the time-axis. Plus, a CNN builds up a hierarchy of complex that shapes can represent higher-level musical events. A fully-connected deep network, on the other hand, can't really be trained on two-dimensional data, since the input matrix is 'unwrapped' into a long vector, destroying the relationships between adjacent pixels.
+
+<figure class='half'>
+	<img src='../images/sloth.jpg'>
+	<img src='../images/spect.png'>
+	<figcaption>Two-dimensional inputs: (l) a photo of a sloth in a bucket, (r) concatenated STFTs</figcaption>
+</figure>
+
+
+
 <script>
 
-document.getElementById('dd1').value = 'Action';
+document.getElementById('dd1').value = 'Romance';
 document.getElementById('dd2').value = 'Comedy';
 document.getElementById('dd3').value = 'Drama';
 
@@ -232,8 +251,8 @@ function renderVenn() {
 <p>Here is a visualization of the film genres predicted on the held-out dataset of 300 tracks</p>
 <div id='chart' class='align-center'></div>
 <audio id='audio'></audio>
-<h3 id='d3_title' style='margin-left: 15px;margin-right: 15px; margin-top: 0px'></h3>
-<h4 id='skip_btn' style='margin-left: 15px;cursor: pointer;'>Skip</h4>
+<h3 id='d3_title' style='margin-left: 15px;margin-right: 15px; margin-top: 0px; margin-bottom: 0px;'></h3>
+<h4 id='play_btn' style='margin-left: 15px;margin-top: 10px;cursor: pointer;'>Play</h4>
     
 
 
@@ -337,17 +356,24 @@ function load_and_render() {
 load_and_render();
 
 var auto_step = setInterval(next, 15000);
+var play_track = false;
 
 function next() {
-	$('audio').animate({volume: 0.0}, 1000);
+	$('#audio').animate({volume: 0.0}, 1000);
 	setTimeout(updateData,1000);
 };
 
-document.getElementById("skip_btn").addEventListener("click", function() {
-	$('audio').animate({volume: 0.0}, 1000);
-	setTimeout(updateData,1000);
-	clearInterval(auto_step);
-	auto_step = setInterval(next, 15000);
+document.getElementById("play_btn").addEventListener("click", function() {
+	play_track = !play_track;
+	if(play_track==true) {
+		searchAndPlay(song_title,data.Film.slice(0,10));
+		this.innerHTML = 'Mute';
+		this.color = '#FFF';
+	} else {
+		audio.pause();
+		this.innerHTML = 'Play';
+		this.color ='#222';
+	};
 });
 
 function updateData() {
@@ -362,7 +388,9 @@ function updateData() {
 
 		console.log(data.Film);
 
-		searchAndPlay(song_title,data.Film.slice(0,10));
+		if(play_track==true) {
+			searchAndPlay(song_title,data.Film.slice(0,10));
+		};
 
 		y.domain(d3.range(data['Predictions'].length))
 			.rangeBands([0, data['Predictions'].length * barHeight]);
@@ -407,6 +435,7 @@ function resize() {
 
 function searchAndPlay(songName,albumName) {
 
+
     playSong(songName,albumName);
 
     function searchTracks(query) {
@@ -424,7 +453,6 @@ function searchAndPlay(songName,albumName) {
                     audio.volume = 0;
                     audio.play();
                     $('audio').animate({volume: 1.0}, 2000);
-                    document.getElementById("skip_btn").innerHTML = 'Playing...Click to Skip';
                     console.log(track.name,track.album,track.artist);
 
                 }
