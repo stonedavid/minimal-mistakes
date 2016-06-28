@@ -147,7 +147,7 @@ the differing sizes of the tag sets</p>
 </select>
 </figure>
 
-<div id='venn'></div>
+<figure id='venn'></figure>
 
 <script>
 
@@ -162,7 +162,7 @@ var tooltip = d3.select("body").append("div")
 var venn_chart = venn.VennDiagram();
 renderVenn();
 
-
+d3.select(window).on('resize', renderVenn); 
 
 function renderVenn() {
 	d3.json('../assets/data/tag_sets.json', function(error,master_set) {
@@ -177,6 +177,10 @@ function renderVenn() {
 				};
 			});
 			d3.select("#venn").datum(sets).call(venn_chart);
+			d3.select('#venn').select('svg')
+				.attr('width','100%')
+				.attr('height','100%')
+				.attr('viewBox','0 0 600 400');
 		}
 
 		updateSets();
