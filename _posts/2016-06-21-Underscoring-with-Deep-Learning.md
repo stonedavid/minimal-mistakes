@@ -25,69 +25,44 @@ comments: true
 
 {% include toc title="Contents" icon="file-text" %}
 
-
-## Part 1: Searching for Scores ##  
+## Intro and Motivation ##
 <br/>
-A lot of work has been done in the past few years on the problem of playlist generation and music recommendation. Pandora and Spotify are probably the first services that come to mind -- they both use user inputs to find good matches in an extensively annotated database. 
 
-Pandora's core reason for being is that is makes excellent recommendations, and Spotify is betting that good recommendations and a (much, much, much) larger library will give it the edge over streaming services from Apple and Google. The method of annotation differs (Pandora is mostly done manually and Spotify uses [Echonest](http://the.echonest.com) for automated annotation), but the search algorithm is fundamentally the same. 
+This post is a very condensed overview of my master's thesis. In short, it was an attempt to model the relationship between underscoring and films by using deep learning. 
 
-Music recommendation isn't just important for streaming services, though. Most commercial tracks (for TV, movies, and ads) are not actually bespoke compositions. They are licensed from production music libraries like [Cutting Edge](http://cuttingedge.sourceaudio.com) or [Jingle Punks](http://jinglepunks.com). Just like in streaming services, the tracks are annotated and searchable. However:
-
-* Search is extremely limited, often based on a short list of keywords
-* Most music libraries only have a few thousand tracks each -- [APM](http://www.apmmusic.com), which links dozens of disparate libraries, has ~400K. Pandora has 1m tracks at a much finer grain of analysis, and Spotify has 20m(!).
-
-But why compare streaming services to production music in the first place? Aren't they apples and oranges? These days, not really:
-
-<figure class='align-right'>
-	<img src='../images/pink_moon.jpg'>
-	<figcaption>VW's <i>Milky Way</i></figcaption>
-</figure>
-
-* Many projects use 'syncs', which means that they use a pre-existing recording by a performing artist. Volkswagen kicked off the modern version of this practice in 1999 with its critically lauded, internet-released [*Milky Way*](https://www.youtube.com/watch?v=0nWuCZe4lSE), featuring the music of Nick Drake. The largest production libraries are actually subsidiaries of the largest record companies, who hold the rights to their back catalogs. 
-
-* Emerging artists are turning to syncs as a very potent marketing tool. Nick Drake sold a ton of records after being featured in that VW commercial (although he wasn't around to enjoy it, unfortunately). Think about all the bands you heard for the first time on an [Apple commercial](http://www.applemusic.info).
-
-
-The line between performing artists and production music has blurred so much in the past 10 years that the real search space for production music is actually much larger than it appears. We need *better* search and *more* search, because any track, especially a newer release, is a potential backing track. 
-
-So, how do we label tracks for use as production music?
+The motivation for this project was to improve the searchability of production music libraries, especially those including pop songs, which are often available for commercial licensing but have tags applied with the average consumer in mind, not music supervisors. Automated annotation and better search for production music could streamline a very time- and labor-intensive process and increase the chance that tracks by lesser known artists get a fair hearing by the right people.
 
 ***
 
-## Part 2: Automated Tagging ##
+## Compiling Training and Testing Data ##
 <br/>
-Although manual annotation, done well, still produces better recommendations than automated tagging (this highly scientific observation is based on a handful of casual conversations about Pandora's recommendations compared to Spotify), it's simply unfeasible for the project of *expanding* the search space for production music. So, the annotations must be automated.
 
-But what sort of annotations you would ultimately want in the first place to match up music to images? Is a set of emotion and genre tags enough? Maybe, but that assumes that the user knows the particular recipe that will generate a good recommendation. In addition, music and image interact in such a way as to transform the emotional content of both media. The annotations need to have a strong link to the image content. 
+Neural networks need a lot of well-labeled data, and the more complex the network, the more data you need. The data preparation process has at least two steps:
 
-So, instead of using the usual tags like emotion, energy, or genre, I set out to see if I could directly label musical samples by appropriate **film genres**. Now, if you had a developer key, you could use the Echonest API to scrape the musical tags for a track and use those features to predict the film genre. Even better, you could cut out the middle-man and use deep learning to generate a set of hidden features. All the countless, tricky relationships between the low-level features and the emotional content of the music and the stylistic content of the film could be implicitly coded into the model.
+* Collect raw data for input
 
-Then, someone making a Romantic-Comedy-Action-Horror film could just drop in those search terms and get a select few tracks that would fit well with the project.
+* Optional: Compress data through feature extraction
 
----
+* Link input data to consistent and accurate ground-truth labels
 
-### *"Wait, Movies? I Thought We Were Talking About Commercials!"* ###
+The final input data were arrays of 100 concatenated frames of the first 40 Mel-Frequency Cepstral Coefficients, comprising about 10 seconds of audio each. The use of a feature vector is not strictly necessary for a deep network: given enough training, a network will learn intermediate features (which can be superior to 'engineered' features like MFCCs) directly from spectrograms. However, spectrograms take up memory equivalent to uncompressed PCM audio, and when handling sets of data that represent hundreds of hours of audio they quickly become completely unwieldy. 
+
+Using MFCCs allows compression on the order of 90% by keeping a few coefficients that describe the rough shape of the spectrum. In short, MFCCs generate a 'filter-excitation' model of the signal, and discard the 'excitation' component. The audio cannot be satisfactorily reconstructed from the MFCCs, but they are extremely effective for models dependent on timbre and rhythm rather than pitch.
+
+Below is a sample of what an audio signal reconstructed from MFCCs sounds like, crossfaded with the original signal. Since the MFCC algorithm discards the upper cepstral coefficients that represent the 'excitation' component, wide-band noise must be used to excite the filter, creating a rough, whispery effect.
+
+<audio id='MFCC' src='../assets/data/Raiders_Fade.m4a' controls></audio>
 <br/>
-I admit it's a little hand-wavy to just jump from a lot of talk about commercial syncs and then propose to build a model to tag music by film genre. To that point, this model is more a proof-of-concept or proof-by-analogy that music-image interactions can be predicted by deep nets. I picked out film music as the dataset for two reasons:
 
-* Film music is a well-defined category, easy to access, and most importantly, extremely plentiful
-* Film genres are also well defined, and IMDB and Wikipedia allow for building a large dataset with consistent labels
+Each tile is linked to one or more genre tags drawn from the Internet Movie Database. When dealing with multi-labeled input, there are two ways of arranging the data, depending on your network architecture:
 
-Although it would be much trickier to build and label, you could conceivably amass a dataset of music from commercials and then label them by product categories and film style.
+* Link each input to a binary vector of length K, where K is the total number of possible labels.
 
-***
+* Duplicate the input for each label, using the duplicates to train independent binary classifiers, and aggregate the predictions of the ensemble.
 
+I chose the second route, allowing for a more thorough use of the data at the expense of increased training time. 
 
-## Part 3: Gathering Ground-Truth Data ##
-
-Neural networks need a lot of well-labeled data, and the more complex the network, the more data you need. The audio came from any and all soundtracks at the university library. Each album was labeled with genre tags sourced from the Internet Movie Database, which annotates every entry with at least one of twenty-two genre tags. 
-
-In the final set, tracks from the same film share the same genre tag, partly for consistency and simplicity, and partly based on the hypothesis that there would be more sonic similarities within a single soundtrack than between soundtracks. This decision, together with some idiosyncratic labels from IMDB, introduced a certain amount of noise to the dataset which ultimately affected accuracy. More on that in the last section.
-
-When all was said and done, I had annotated the soundtracks from 788 films and compiled a list for each genre tag that included every track that carried that tag. As I looked over each set, some were clearly far too small to be included in the training data. At the time, my plan was to train a multi-class classifier using a single, massive deep network. Such a network needs training examples that are more or less balanced by class. If I had 100 examples of **A** and 5,000 examples of **B**, the network could converge on a totally overfit solution that does right +95% of the time by mindlessly predicting **B**. That would be useless, so sets with less than 500 tracks were set aside.
-
-Anothing sticking point was the high degree of co-occurence between certain tags. "Drama" tended to span a lot of seemingly unrelated films, sometimes occuring as a single tag and sometimes as a modifier for other tags like "Comedy" or "Romance". The interactive plot below shows the overlaps between the final ten tags. Note the size of the "Drama" set and the huge overlap between "Drama", "Comedy" and "Romance".
+The ground-truth labels have some interesting characteristics, with a high degree of overlap between some labels and none between others. Some label sets are very large, especially "Drama". In the interactive plot below, note how some labels are nearly completely subsets of "Drama".
 
 <h3>Tag Overlaps</h3>
  
@@ -139,26 +114,16 @@ Anothing sticking point was the high degree of co-occurence between certain tags
 
 This was probably a clue that the "Drama" tag carried almost no information, but I couldn't set it aside without losing a ton of soundtracks that were only tagged as Dramas, so I went ahead and included them anyway.
 
-## Part 4: Compression and Audio Features ##
-
-Neural networks have the ability to learn on raw spectrogram or PCM data, but audio can be a huge memory hog, and my laptop frankly couldn't handle manipulating 100 GB arrays of 32-bit spectrograms without spewing smoke. To reap the benefits of such a massive dataset, I had to compress it enough to be handled by a GPU. I turned to a now ancient tool, Mel-Frequency Cepstral Coefficients (MFCCs), a workhorse audio feature with roots in music perception research from the 1930s. "Cepstral" coefficients are what you get when you take a secondary transform of the Fourier transform of your audio. Apparently this transformation also effects the terminology, so "spectral" becomes "cepstral", "frequency" becomes "quefrency", and so on. This does two neat things:
-
-* The spectrum can be expressed as the sum of a lot of simple waves
-* Most of those coefficents can be thrown out, because they encode high-frequency periodicities in the spectrum, AKA: noise
-
-You can take a 1024-bin vector of spectral coefficients and mash it down into 40 cepstral coefficients without losing important data. The cepstral coefficients can reconstruct a passably good approximation of the original spectrum. Almost incidentally, cepstral coefficients also approximate co-variance reduction methods like PCA, so the retained coefficients are meaningful and shorn of redundancy.
-
-Such a huge reduction does come at a cost, of course: all pitch and phase information is destroyed in the process. You can listen to what an audio track sounds like after it's been put through the MFCC wringer here.
-
-<audio id='MFCC' src='../assets/data/Raiders_Fade.m4a' controls></audio>
-
-## Part 4: Deep Learning and Convolutional Nets ##
+## Deep Learning and ConvNets ##
 <br/>
-If you do a quick search for deep learning or convolutional neural networks (CNN), you can find a lot of fantastic examples of how effective they are at tagging images. But what about other media? Can CNNs be effective classifiers for audio?
 
-In fact, CNNs have set benchmarks in a wide array of audio classification tasks, notably phoneme tagging and speech transcription, by essentially treating tiled spectrograms as images. The same convolution trick that gives CNNs the ability to recognize rotated, flipped, and scaled images is useful for audio, too. 
+There are a ton of excellent tutorials on the basic inner workings of neurals networks, so I'll try not to retread to much here. I'd like to focus on convolutional networks and how the same properties that give CNNs the ability to recognize rotated, flipped, and scaled images is useful for audio, too. 
 
-We want the network to recognize sound events no matter where they fall in the spectrogram, especially along the time-axis. Plus, a CNN builds up a hierarchy of complex that shapes can represent higher-level musical events. A fully-connected deep network, on the other hand, can't really be trained on two-dimensional data, since the input matrix is 'unwrapped' into a long vector, destroying the relationships between adjacent pixels.
+One of the biggest problems with using a fully-connected network for audio analysis is that it cannot encode any time-dependent information. Even if you try to use concatenated frames as feature 'tiles', any connections between adjacent pixels are destroyed in the process of unraveling the tile into an input vector. At best, long-term features could be generated by pooling across frames, but no sequential information is preserved.
+
+Convolution networks work around this by changing the way that the neurons sum their inputs. Instead of summing a weighted vector from the entire input layer, the neuron in a convolutional network only 'looks' at a small region of the input with a correspondingly small set of weights (the kernel), and encodes a 'stack' of activations for each kernel position. In between layers, data is down-sampled ('max-pooled'), so each successive layer 'sees' a larger portion of the image and detects more complex combinations of earlier kernel activations.
+
+A convolutional layer is agnostic to transformations of the data, so neurons activate in the presence of a feature independent of its precise position and orientation. At the same time, spatial relationships between intermediate features combine in higher level features, encoding sequences through frames and across cepstral bins.
 
 <figure class='half'>
 	<img src='../images/sloth.jpg'>
@@ -166,7 +131,92 @@ We want the network to recognize sound events no matter where they fall in the s
 	<figcaption>Two-dimensional inputs: (l) a photo of a sloth in a bucket, (r) concatenated STFTs</figcaption>
 </figure>
 
+## Implementation in Python ##
 
+The convolutional networks were created with Theano, an open-source machine learning library for Python, with most of the scripting done with the Lasagne and Nolearn wrappers for Theano. My implementation was heavily informed by Daniel Nouri's excellent tutorial on building an ensemble of specialist deep networks.
+
+First we define our network hyperparameters. The net has 8 layers total: 1 input layer, 4 convolutional layers, 2 fully-connected layers, and a single neuron on the output layer.
+
+```python
+epochs = 1000
+dropout1 = .1
+dropout2 = .2
+dropout3 = .3
+dropout4 = .4
+dropout5 = .5
+c1 = 32
+c2 = 64
+c3 = 128
+c4 = 256
+h5 = 50
+h6 = 50
+batch = 1200
+rate = .01
+momentum = .9
+```
+
+Then we create a neural network instance with a single call to nolearn.Lasagne.NeuralNet, using our previously defined hyperparameters. There is a dropout layer in between each layer to regularize the neurons and prevent overfitting. `regression = True` so that we can directly look at the activation of the output layer. This will be important later as a confidence ranking.
+
+```python
+CNN = NeuralNet(
+layers=[ 
+    ('input', layers.InputLayer),
+    
+    ('conv1', Conv2DLayer),
+    ('pool1', MaxPool2DLayer),
+    ('dropout1', layers.DropoutLayer),
+    
+    ('conv2', Conv2DLayer),
+    ('pool2', MaxPool2DLayer),
+    ('dropout2', layers.DropoutLayer),
+    
+    ('conv3', Conv2DLayer),
+    ('pool3', MaxPool2DLayer),
+    ('dropout3', layers.DropoutLayer),
+    
+    ('conv4', Conv2DLayer),
+    ('pool4', MaxPool2DLayer),
+    ('dropout4', layers.DropoutLayer),
+    
+    ('hidden5', layers.DenseLayer),
+    ('dropout5', layers.DropoutLayer),
+    
+    ('hidden6', layers.DenseLayer),
+    
+    ('output', layers.DenseLayer),
+    ],
+
+# Hyperparameters
+
+input_shape=(None, 1, 40, 100),
+conv1_num_filters = c1, conv1_filter_size = (5, 5), pool1_pool_size = (2, 2),
+dropout1_p = dropout1,
+conv2_num_filters = c2, conv2_filter_size = (4, 4), pool2_pool_size = (2, 2),
+dropout2_p = dropout2,
+conv3_num_filters = c3, conv3_filter_size = (2, 2), pool3_pool_size = (2, 2),
+dropout3_p = dropout3,
+conv4_num_filters = c4, conv4_filter_size = (2, 2), pool4_pool_size = (2, 2),
+dropout4_p = dropout4,
+hidden5_num_units = h5,
+dropout5_p = dropout5, 
+hidden6_num_units = h6,
+output_num_units = 1, 
+output_nonlinearity = sigmoid,
+
+update  nesterov_momentum,
+update_learning_rate = theano.shared(float32(rate)),
+update_momentum = theano.shared(float32(momentum),
+on_epoch_finished = [
+    AdjustVariable('update_learning_rate', start = 0.01, stop = 0.0001),
+    AdjustVariable('update_momentum', start = 0.9, stop = 0.999),
+    EarlyStopping(patience = 30),
+    ],
+batch_iterator_train = BatchIterator(batch_size = batch),
+regression = True, 
+max_epochs = epochs,  
+verbose = 1,
+)
+```
 
 <script>
 
