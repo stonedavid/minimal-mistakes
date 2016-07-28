@@ -407,8 +407,6 @@ function load_and_render() {
 
 		console.log(data.Film);
 
-		//searchAndPlay(song_title,data.Film.slice(0,10));
-
 		y.domain(d3.range(data['Predictions'].length))
 			.rangeBands([0, data['Predictions'].length * barHeight]);
 
