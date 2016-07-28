@@ -464,13 +464,9 @@ function load_and_render() {
 
 load_and_render();
 
-//var auto_step = setInterval(next, 15000);
 var play_track = false;
 
-/*function next() {
-	$('#audio').animate({volume: 0.0}, 1000);
-	setTimeout(updateData,1000);
-};*/
+
 
 
 document.getElementById("play_btn").addEventListener("click", function() {
