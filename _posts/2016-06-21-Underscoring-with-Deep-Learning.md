@@ -64,7 +64,7 @@ I chose the second route, allowing for a more thorough use of the data at the ex
 
 The ground-truth labels have some interesting characteristics, with a high degree of overlap between some labels and none between others. Some label sets are very large, especially "Drama". In the interactive plot below, note how some labels are nearly completely subsets of "Drama".
 
-<h3>Tag Overlaps</h3>
+***
  
 <figure class='half'>
 <select id='dd1' onchange='renderVenn()'>
@@ -112,7 +112,11 @@ The ground-truth labels have some interesting characteristics, with a high degre
 
 <figure id='venn'></figure>
 
+***
+
 This was probably a clue that the "Drama" tag carried almost no information, but I couldn't set it aside without losing a ton of soundtracks that were only tagged as Dramas, so I went ahead and included them anyway.
+
+***
 
 ## Deep Learning and ConvNets ##
 <br/>
@@ -131,11 +135,14 @@ A convolutional layer is agnostic to transformations of the data, so neurons act
 	<figcaption>Two-dimensional inputs: (l) a photo of a sloth in a bucket, (r) concatenated STFTs</figcaption>
 </figure>
 
+***
+
 ## Implementation in Python ##
+<br/>
 
-The convolutional networks were created with Theano, an open-source machine learning library for Python, with most of the scripting done with the Lasagne and Nolearn wrappers for Theano. My implementation was heavily informed by Daniel Nouri's excellent tutorial on building an ensemble of specialist deep networks.
+The convolutional networks were created with Theano, an open-source machine learning library for Python, with most of the scripting done with the Lasagne and Nolearn wrappers for Theano. My implementation was heavily informed by Daniel Nouri's [excellent tutorial](http://danielnouri.org/notes/2014/12/17/using-convolutional-neural-nets-to-detect-facial-keypoints-tutorial/) on building an ensemble of specialist deep networks.
 
-First we define our network hyperparameters. The net has 8 layers total: 1 input layer, 4 convolutional layers, 2 fully-connected layers, and a single neuron on the output layer.
+First we define our network hyperparameters for each of 10 network instances. The each network has 8 layers total: 1 input layer, 4 convolutional layers, 2 fully-connected layers, and a single neuron on the output layer. The output neuron gives a value in between 0 and 1 which will be used as a rough confidence metric for the presence of a genre tag.
 
 ```python
 epochs = 1000
@@ -155,11 +162,14 @@ rate = .01
 momentum = .9
 ```
 
-Then we create a neural network instance with a single call to nolearn.Lasagne.NeuralNet, using our previously defined hyperparameters. There is a dropout layer in between each layer to regularize the neurons and prevent overfitting. `regression = True` so that we can directly look at the activation of the output layer. This will be important later as a confidence ranking.
+Then we create a neural network instance with a single call to nolearn.Lasagne.NeuralNet, using our previously defined hyperparameters. There is a dropout layer in between each layer to regularize the neurons and prevent overfitting, and a simple `EarlyStopping` function polls the validation error after each epoch and breaks out of the training loop after 30 consecutive increases in validation error. `regression = True` so that we can directly look at the activation of the output neuron.
 
 ```python
 CNN = NeuralNet(
-layers=[ 
+
+	layers = 
+	[ 
+
     ('input', layers.InputLayer),
     
     ('conv1', Conv2DLayer),
@@ -184,39 +194,82 @@ layers=[
     ('hidden6', layers.DenseLayer),
     
     ('output', layers.DenseLayer),
+    
     ],
 
-# Hyperparameters
+'''
+Hyper-parameters 
+'''
 
-input_shape=(None, 1, 40, 100),
-conv1_num_filters = c1, conv1_filter_size = (5, 5), pool1_pool_size = (2, 2),
-dropout1_p = dropout1,
-conv2_num_filters = c2, conv2_filter_size = (4, 4), pool2_pool_size = (2, 2),
-dropout2_p = dropout2,
-conv3_num_filters = c3, conv3_filter_size = (2, 2), pool3_pool_size = (2, 2),
-dropout3_p = dropout3,
-conv4_num_filters = c4, conv4_filter_size = (2, 2), pool4_pool_size = (2, 2),
-dropout4_p = dropout4,
-hidden5_num_units = h5,
-dropout5_p = dropout5, 
-hidden6_num_units = h6,
-output_num_units = 1, 
-output_nonlinearity = sigmoid,
+	input_shape=(None, 1, 40, 100),
+	conv1_num_filters = c1, conv1_filter_size = (5, 5), pool1_pool_size = (2, 2),
+	dropout1_p = dropout1,
+	conv2_num_filters = c2, conv2_filter_size = (4, 4), pool2_pool_size = (2, 2),
+	dropout2_p = dropout2,
+	conv3_num_filters = c3, conv3_filter_size = (2, 2), pool3_pool_size = (2, 2),
+	dropout3_p = dropout3,
+	conv4_num_filters = c4, conv4_filter_size = (2, 2), pool4_pool_size = (2, 2),
+	dropout4_p = dropout4,
+	hidden5_num_units = h5,
+	dropout5_p = dropout5, 
+	hidden6_num_units = h6,
+	output_num_units = 1, 
+	output_nonlinearity = sigmoid,
 
-update  nesterov_momentum,
-update_learning_rate = theano.shared(float32(rate)),
-update_momentum = theano.shared(float32(momentum),
-on_epoch_finished = [
-    AdjustVariable('update_learning_rate', start = 0.01, stop = 0.0001),
-    AdjustVariable('update_momentum', start = 0.9, stop = 0.999),
-    EarlyStopping(patience = 30),
-    ],
-batch_iterator_train = BatchIterator(batch_size = batch),
-regression = True, 
-max_epochs = epochs,  
-verbose = 1,
+	update = nesterov_momentum,
+	update_learning_rate = theano.shared(float32(rate)),
+	update_momentum = theano.shared(float32(momentum),
+	on_epoch_finished = [
+	    AdjustVariable('update_learning_rate', start = 0.01, stop = 0.0001),
+	    AdjustVariable('update_momentum', start = 0.9, stop = 0.999),
+	    EarlyStopping(patience = 30),
+	    ],
+
+	batch_iterator_train = BatchIterator(batch_size = batch),
+	regression = True, 
+	max_epochs = epochs,  
+	verbose = 1
 )
 ```
+
+After a long night of running the training loop on each network, the average validation error came down to 0.22. Unsurprisingly, this was about 10 times smaller than the validation error on a single multi-class network. I won't bore you with all the metrics for evaluating multiple tagging algorithms, but if you're interested they're covered in the text of my thesis.
+
+***
+
+## Making Predictions ##
+<br/>
+
+Finally, we can actually see the network make predictions about the related film genres of the held-out test tracks. The plot below automatically cycles through the 196 tracks in the test set, showing the normalized predictions by bar length and the actual ground-truth labels with bright green bars. Simply put, if the green bars are longer, that's a more accurate prediction. If you want to hear the tracks, just press "play" (the plot will skip through the example if it can't find a preview clip on Spotify).
+
+***
+
+<div id='chart' class='align-center'></div>
+<audio id='audio'></audio>
+
+<figure class='half' style='margin:1px;'>
+<p id='play_btn' class='btn small'>Play</p>
+<p id='d3_cue' class='text-center'></p>
+<p id='d3_film' class='text-center'></p>
+<p id='next_btn' class='btn small'>Next</p>
+</figure>
+
+***
+
+Most of the time, the ground-truth tags are in the top five predictions; the average track has between two and three tags, almost never more than three. So there's still a ways to go before the network can make dead-on predictions by just delivering the top three tags. 
+
+That said, even the inaccurate predictions are not nonsensical. There seems to be a SciFi-Thriller-Action-Adventure cluster and a Romance-Comedy-Musical cluster. In the future, significant improvement could be gained by dividing the tracks along that axis as a premiliminary step, and then doing a finer-grained prediction that included some of the genre-breaking, ambiguous classes like "Crime" and "Drama". 
+
+I'm certain that putting this network architecture within a Recursive Neural Network would provide a further boost. As it is, the network makes independent predictions on each 10 second slice and then averages the predictions across the whole track. An RNN could include context from sequences of slices or even sequences of spectral frames, and there's a lot of evidence out there that sequential context counts for a lot in audio analysis.
+
+For further reading, check out my [thesis](../assets/docs/Stone_Thesis_Final.pdf), and my defense as a [slideshow](../assets/docs/Thesis.key)(lots of animations!) or [pdf](../assets/docs/slides.pdf). 
+
+I couldn't have managed without taking advantage of all the great tutorials and guides that were being published as I was doing my research. For an excellent intro to neural networks, Andrej Karpathy's [blog](http://karpathy.github.io) is hard to beat, especially for someone like myself who never really set the world on fire with their math skills. Although I'm splitting my time between [Caffe](http://caffe.berkeleyvision.org) and [Torch](http://torch.ch) at the moment, [Theano](http://deeplearning.net/software/theano/tutorial/index.html) is still great for Python users and their tutorials are a daunting but thourough resource for battling the minotaur that haunts the labyrinth of deep learning, linear algebra.
+
+
+
+
+
+
 
 <script>
 
@@ -297,13 +350,6 @@ function renderVenn() {
 
 </script>
 
-<h2>Genre Predictions</h2>
-<p>Here is a visualization of the film genres predicted on the held-out dataset of 300 tracks</p>
-<div id='chart' class='align-center'></div>
-<audio id='audio'></audio>
-<h3 id='d3_title' style='margin-left: 15px;margin-right: 15px; margin-top: 0px; margin-bottom: 0px;'></h3>
-<h4 id='play_btn' style='margin-left: 15px;margin-top: 10px;cursor: pointer;'>Play</h4>
-    
 
 
 <script type="text/javascript">  
@@ -361,7 +407,7 @@ function load_and_render() {
 
 		console.log(data.Film);
 
-		searchAndPlay(song_title,data.Film.slice(0,10));
+		//searchAndPlay(song_title,data.Film.slice(0,10));
 
 		y.domain(d3.range(data['Predictions'].length))
 			.rangeBands([0, data['Predictions'].length * barHeight]);
@@ -373,8 +419,21 @@ function load_and_render() {
 		d3.select(chart.node().parentNode)
 			.style('height', (height + margin.top + margin.bottom) + 'px');
 
-		document.getElementById("d3_title").innerHTML = '"'+song_title+'", from '+data.Film;
 
+		if (data.Cue.slice(3,-4).length>23) {
+			var cueString = data.Cue.slice(3,-4).slice(0,23)+'...'
+		} else {
+			var cueString = data.Cue.slice(3,-4)
+		};
+
+		if (data.Film.length>23) {
+			var filmString = data.Film.slice(0,23)+'...'
+		} else {
+			var filmString = data.Film
+		};
+
+		document.getElementById("d3_cue").innerHTML = cueString;
+		document.getElementById("d3_film").innerHTML = filmString;
 
 		var bars = chart.selectAll('.bar')
 			.data(data['Predictions'])
@@ -405,13 +464,14 @@ function load_and_render() {
 
 load_and_render();
 
-var auto_step = setInterval(next, 15000);
+//var auto_step = setInterval(next, 15000);
 var play_track = false;
 
-function next() {
+/*function next() {
 	$('#audio').animate({volume: 0.0}, 1000);
 	setTimeout(updateData,1000);
-};
+};*/
+
 
 document.getElementById("play_btn").addEventListener("click", function() {
 	play_track = !play_track;
@@ -426,6 +486,10 @@ document.getElementById("play_btn").addEventListener("click", function() {
 	};
 });
 
+document.getElementById("next_btn").addEventListener("click", function() {
+	updateData();
+});
+
 function updateData() {
 
 	d3.json(url, function(error,d) {
@@ -438,7 +502,7 @@ function updateData() {
 
 		console.log(data.Film);
 
-		if(play_track==true) {
+		if(play_track) {
 			searchAndPlay(song_title,data.Film.slice(0,10));
 		};
 
@@ -451,7 +515,20 @@ function updateData() {
 		d3.select(chart.node().parentNode)
 			.style('height', (height + margin.top + margin.bottom) + 'px');
 
-		document.getElementById("d3_title").innerHTML = '"'+data.Cue.slice(3,-4)+'", from '+data.Film;
+		if (data.Cue.slice(3,-4).length>23) {
+			var cueString = data.Cue.slice(3,-4).slice(0,23)+'...'
+		} else {
+			var cueString = data.Cue.slice(3,-4)
+		};
+
+		if (data.Film.length>23) {
+			var filmString = data.Film.slice(0,23)+'...'
+		} else {
+			var filmString = data.Film
+		};
+
+		document.getElementById("d3_cue").innerHTML = cueString;
+		document.getElementById("d3_film").innerHTML = filmString;
 
 		var bars = d3.selectAll('.bar')
 			.data(data['Predictions']).transition();

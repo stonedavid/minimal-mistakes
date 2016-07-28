@@ -64,8 +64,8 @@ google_ad_slot           :
 # Site Author
 author:
   name             : "David Stone"
-  avatar           : "jewelface.jpg"
-  bio              : "Music Technology, Education, and Production"
+  avatar           : "bike.jpg"
+  bio              : "Music + Python"
   location         : "Brooklyn, NY"
   email            : "dcs309@nyu.edu"
   uri              :
@@ -75,14 +75,14 @@ author:
   flickr           :
   facebook         :
   foursquare       :
-  github           : "https://github.com/stonedavid"
+  github           : "stonedavid"
   google_plus      :
   keybase          :
   instagram        :
   lastfm           :
   linkedin         :
   pinterest        :
-  soundcloud       : "http://soundcloud.com/davidstone-1"
+  soundcloud       : "davidstone-1"
   stackoverflow    : # http://stackoverflow.com/users/123456/username
   steam            :
   tumblr           :
