@@ -4,7 +4,13 @@ author_profile: true
 comments: true
 ---
 
----
+This post is a very condensed overview of my master's thesis. In short, it was an attempt to model the relationship between underscoring and films by using deep learning. 
+
+The motivation for this project was to improve the searchability of production music libraries, especially those including pop songs, which are often available for commercial licensing but have tags applied with the average consumer in mind, not music supervisors. Automated annotation and better search for production music could streamline a very time- and labor-intensive process and increase the chance that tracks by lesser known artists get a fair hearing by the right people.
+
+***
+{% include toc title="Contents" icon="file-text" %}
+
 <style>
 	div.venntooltip {   
 	  position: absolute;           
@@ -23,16 +29,7 @@ comments: true
 <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
 <script src="../assets/js/vendor/venn/venn.js"></script>
 
-{% include toc title="Contents" icon="file-text" %}
 
-## Intro and Motivation ##
-<br/>
-
-This post is a very condensed overview of my master's thesis. In short, it was an attempt to model the relationship between underscoring and films by using deep learning. 
-
-The motivation for this project was to improve the searchability of production music libraries, especially those including pop songs, which are often available for commercial licensing but have tags applied with the average consumer in mind, not music supervisors. Automated annotation and better search for production music could streamline a very time- and labor-intensive process and increase the chance that tracks by lesser known artists get a fair hearing by the right people.
-
-***
 
 ## Compiling Training and Testing Data ##
 <br/>
