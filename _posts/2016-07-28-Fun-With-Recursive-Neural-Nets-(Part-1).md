@@ -78,12 +78,12 @@ The only normalization comes after the `time_signature` condition test: if there
 After some experimentation with hyperparameters, char-rnn started to deliver:
 
 ##### Trained on J. S. Bach #####
-<audio id='bach' src='../assets/data/JSB.wav' controls></audio>
+<audio id='bach' src='../assets/data/JSB_aac.m4a' controls></audio>
 
 Clearly, this won't be winning any Grammys. Still, I'm amazed at the consistent contrapuntal texture in the Bach example, trading motion back-and-forth between two independent lines. It stays identifiably in G major throughout, sometimes clearly outlining the harmony and often slipping into some strange alterations. It's clearly "Bachian", if Bach had suffered some catastrophic injury that limited his attention span to about two-and-a-half seconds.
 
 ##### Trained on L. v. Beethoven #####
-<audio id='lvb' src='../assets/data/LVB.wav' controls></audio>
+<audio id='lvb' src='../assets/data/LVB_aac.m4a' controls></audio>
 
 I like this even more than the Bach, because of how much more dynamic it is. You might be familiar with the history of "[dynamic markings](https://en.wikipedia.org/wiki/Dynamics_(music)#Relative_loudness)" in music, or explicit instructions for volume. Bach wrote for keyboard instruments that had non-existent dynamic range (harpsichord) or extremely limited (clavichord and organ). By Beethoven's day, the piano was nearly perfected and could execute a wide range of volumes -- Beethoven is famous (infamous) for his attention to detail with respect to dynamic markings. So, while the Bach MIDI has each note encoded at full velocity, the Beethoven library is full of *crescendi* and *decrescendi*, explosive *sforzandi* and abrupt *subito piani*.
 
