@@ -40,6 +40,8 @@
     "build:all": "npm run build:css && npm run build:js"
   },
   "dependencies": {
-    "lodash": "^4.13.1"
+    "lodash": "^4.13.1",
+    "paper": "^0.10.2",
+    "vexflow": "^1.2.65"
   }
 }
